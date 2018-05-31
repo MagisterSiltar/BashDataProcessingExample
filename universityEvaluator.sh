@@ -136,6 +136,11 @@ for i in "$@"
                 shift
             ;;
 
+            -h|--help|*)
+                ACTION='help'
+                shift
+            ;;
+
         esac
     done
 
@@ -167,8 +172,6 @@ case ${ACTION} in
         styled_echo '-h, --help              Show this help (-h works with no other options)'
         styled_echo '-v, --verbose           increase verbosity [-v, -vv, -vvv]'
         styled_echo '    --version           Print version number'
-        styled_echo '    --create-config     Create Config File'
-        styled_echo '    --env=[ENVIRONMENT] Select a environment from config file to sync'
     ;;
 
 esac
