@@ -5,6 +5,7 @@ CONFIG_FILE_NAME='rsync+.config.yml'
 VERSION='0.0.1'
 VERBOSE=0
 ACTION='mainmenu'
+CSVFILE='./university.csv'
 
 # CONFIGURATION
 # =============
@@ -39,6 +40,11 @@ goto() {
     styled_echo '--- --- --- --- --- --- ---' 3
 
     sh ./universityEvaluator.sh "--action=$1" "-$verboseArgument"
+}
+
+readCSV() {
+    eCollection=( $(cut -d ',' -f2 *$CSVFILE* ) )
+    return eCollection
 }
 
 # Action Configuration
