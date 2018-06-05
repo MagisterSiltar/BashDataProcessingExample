@@ -18,10 +18,9 @@ writeLn() {
     if [[ -z ${2+x} ]]; then
         ECHO $1
     else
-        ECHO $1
-# if [[ $VERBOSE -gt "$2" || "$2" == *$VERBOSE* ]]; then
-#     ECHO $1
-# fi
+        if [ $VERBOSE -gt "$2" ] || [ "$2" == $VERBOSE ]; then
+            ECHO $1
+        fi
     fi
 }
 
@@ -324,6 +323,7 @@ for i in "$@"
 
 writeLn '+--------------------------' 1
 writeLn "| ACTION: ${ACTION}" 1
+writeLn "| VERBOSE: ${VERBOSE}" 1
 writeLn '| VERBOSE LEVEL: V' 1
 writeLn '| VERBOSE LEVEL: VV' 2
 writeLn '| VERBOSE LEVEL: VVV' 3
