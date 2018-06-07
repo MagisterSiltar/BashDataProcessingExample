@@ -30,10 +30,10 @@ CSVFILE='universities.csv'
 # Echo with Verbose implementation
 # TODO Verbose Level as Int
 writeLn() {
-    if [[ -z ${2+x} ]]; then
+    if [[ -z $2 ]]; then
         ECHO $1
     else
-        if [ "$VERBOSE" -gt $2 ] || [ $2 == "$VERBOSE" ]; then
+        if (( $VERBOSE > $2 )) || (( $2 == $VERBOSE )); then
             ECHO $1
         fi
     fi
@@ -162,7 +162,7 @@ actionMainMenu() {
             read -p 'Input the Number of your option: ' answer
 
             if [[ $answer -gt 0 && $answer -lt 7 ]] ;then
-                writeLn 'Answer is' + answer
+                #writeLn "Answer is $answer"
 
                 case ${answer} in
 
@@ -213,6 +213,7 @@ actionUniversitiesAnalysis() {
     writeLn 'actionUniversitiesAnalysis' 3
     writeLn ''
     writeLn '### For analysing all University-Names with a given searchword ###'
+    writeLn ''
 
     while [ true ]
         do
@@ -229,7 +230,7 @@ actionUniversitiesAnalysis() {
         done
 
     writeLn ''
-    writeLn "found $count results:"
+    writeLn "Found $count results:"
 
     rows=$(grep -i $answer $CSVFILE | sort)
     splitInRowArray "$rows"
@@ -242,6 +243,7 @@ actionPercentOfColleges() {
     writeLn 'actionPercentOfColleges' 3
     writeLn ''
     writeLn '### For calculating percentage of all colleges compared to all universities ###'
+    writeLn ''
 
     while [ true ]
         do
@@ -275,6 +277,7 @@ actionUniversitiesOfAState() {
     writeLn 'actionUniversitiesOfAState' 3
     writeLn ''
     writeLn '### For searching all Universities of an USA State ###'
+    writeLn ''
 
     while [ true ]
         do
@@ -291,7 +294,7 @@ actionUniversitiesOfAState() {
         done
 
     writeLn ''
-    writeLn "found $count results:"
+    writeLn "Found $count results:"
 
     rows=$(grep $answer $CSVFILE | sort)
     splitInRowArray "$rows"
@@ -304,6 +307,7 @@ actionStateUniversitiesCount() {
     writeLn 'actionStateUniversitiesCount' 3
     writeLn ''
     writeLn '### Universities count of each State in USA ###'
+    writeLn ''
 
     stateIndex=0
     states=()
