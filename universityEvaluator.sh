@@ -1,3 +1,17 @@
+#!/bin/bash
+#
+# Script    : universityEvaluator.sh
+# Data      : universities.csv
+# Author    : Andreas Frick, Jonathan Werren
+# Purpose   : Evaluation of Universities
+# Version   : 1.3
+# Created   : 02.06.2018
+#
+# Changes:
+# v1.1 => Tasks 6.1, 6.4, 6.5 completed
+# v1.2 => Tasks 6.2, 6.3 completed
+# v1.3 => Added several sorts for sorted list printout
+ 
 # GLOBAL VARIABLES
 # ================
 
@@ -18,7 +32,7 @@ writeLn() {
     if [[ -z ${2+x} ]]; then
         ECHO $1
     else
-        if [ $VERBOSE -gt "$2" ] || [ "$2" == $VERBOSE ]; then
+        if [ "$VERBOSE" -gt $2 ] || [ $2 == "$VERBOSE" ]; then
             ECHO $1
         fi
     fi
@@ -140,11 +154,10 @@ actionMainMenu() {
     writeLn '4. Show state universities.'
     writeLn '5. Number of universities per state'
     writeLn ''
-    writeLn 'Input the Number of your option.'
 
     while [ true ]
         do
-            read answer
+            read -p 'Input the Number of your option: ' answer
 
             if [[ $answer -gt 0 && $answer -lt 6 ]] ;then
                 writeLn 'Answer is' + answer
@@ -181,7 +194,39 @@ actionMainMenu() {
 
 actionPreview() {
     writeLn 'actionPreview' 3
+    writeLn ''
+    writeLn '### Data Preview ###'
+
     splitInRowArray "$(head -n 6 $CSVFILE)"
+    writeTable "$rows"
+
+    writeAnyKeyForBackQuestion
+}
+
+actionUniversitiesAnalysis() {
+    writeLn 'actionUniversitiesAnalysis' 3
+    writeLn ''
+    writeLn '### For analysing all University-Names with a given searchword ###'
+
+    while [ true ]
+        do
+            read -p 'Please enter a word to be searched: ' answer
+            #answer="$(echo "$answer" | tr '[:lower:]' '[:upper:]')"
+
+            count=$(grep -c -i $answer $CSVFILE)
+            if [[ $count -gt 0 ]] ;then
+                break
+            fi
+
+            writeLn 'Sorry, no Result for this searchword. Try again.'
+
+        done
+
+    writeLn ''
+    writeLn "found $count results:"
+
+    rows=$(grep "$answer" $CSVFILE | sort)
+    splitInRowArray "$rows"
     writeTable "$rows"
 
     writeAnyKeyForBackQuestion
@@ -189,12 +234,12 @@ actionPreview() {
 
 actionUniversitiesOfAState() {
     writeLn 'actionUniversitiesOfAState' 3
-
-    writeLn 'For searching all Universities of an USA State please input the shortcut of a State:'
+    writeLn ''
+    writeLn '### For searching all Universities of an USA State ###'
 
     while [ true ]
         do
-            read answer
+            read -p 'Please input the shortcut of a State' answer
             answer="$(echo "$answer" | tr '[:lower:]' '[:upper:]')"
 
             count=$(grep -c "$answer" $CSVFILE)
@@ -209,7 +254,7 @@ actionUniversitiesOfAState() {
     writeLn ''
     writeLn "found $count results:"
 
-    rows=$(grep "$answer" $CSVFILE)
+    rows=$(grep "$answer" $ | sort)
     splitInRowArray "$rows"
     writeTable "$rows"
 
@@ -218,7 +263,8 @@ actionUniversitiesOfAState() {
 
 actionStateUniversitiesCount() {
     writeLn 'actionStateUniversitiesCount' 3
-    writeLn 'Universities count of each State in USA:'
+    writeLn ''
+    writeLn '### Universities count of each State in USA ###'
 
     stateIndex=0
     states=()
@@ -348,6 +394,10 @@ case ${ACTION} in
 
     preview)
         actionPreview
+    ;;
+
+    analysis)
+        actionUniversitiesAnalysis
     ;;
 
     stateuniversities)
