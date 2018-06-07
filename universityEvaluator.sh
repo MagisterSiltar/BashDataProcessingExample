@@ -4,14 +4,15 @@
 # Data      : universities.csv
 # Author    : Andreas Frick, Jonathan Werren
 # Purpose   : Evaluation of Universities
-# Version   : 1.4
+# Version   : 1.5
 # Created   : 02.06.2018
 #
 # Changes:
 # v1.1 => Tasks 6.1, 6.4, 6.5 completed
 # v1.2 => Tasks 6.2, 6.3 completed
 # v1.3 => Added several sorts for sorted list printout
-# v1.4 => Added exit
+# v1.4 => Added exit and missing comments
+# v1.5 => Optimized Task 6.5
  
 # GLOBAL VARIABLES
 # ================
@@ -110,6 +111,8 @@ writeAnyKeyForBackQuestion() {
     # Do nothing, wait only for input
     read anyKey
 
+    clear
+
     goto 'mainmenu'
 }
 
@@ -159,10 +162,11 @@ actionMainMenu() {
 
     while [ true ]
         do
+            # Get input of user
             read -p 'Input the Number of your option: ' answer
 
             if [[ $answer -gt 0 && $answer -lt 7 ]] ;then
-                #writeLn "Answer is $answer"
+                writeLn "Answer is $answer" 3
 
                 case ${answer} in
 
@@ -187,28 +191,32 @@ actionMainMenu() {
                     ;;
 
                     "6")
+                        echo ""
+                        echo "Exiting..."
                         exit 0
                     ;;
 
                 esac
-
             else
-                writeLn 'Option unknown please use a value between 1 - 5.'
+                writeLn 'Option unknown please use a value between 1 - 6.'
             fi
         done
 }
 
+# Task 6.1
 actionPreview() {
     writeLn 'actionPreview' 3
     writeLn ''
     writeLn '### Data Preview ###'
 
+    # Get first few lines of datafile
     splitInRowArray "$(head -n 6 $CSVFILE)"
     writeTable "$rows"
 
     writeAnyKeyForBackQuestion
 }
 
+# Task 6.2
 actionUniversitiesAnalysis() {
     writeLn 'actionUniversitiesAnalysis' 3
     writeLn ''
@@ -217,9 +225,10 @@ actionUniversitiesAnalysis() {
 
     while [ true ]
         do
+            # Ask user for searchword
             read -p 'Please enter a word to be searched: ' answer
-            #answer="$(echo "$answer" | tr '[:lower:]' '[:upper:]')"
 
+            # Count results
             count=$(grep -c -i $answer $CSVFILE)
             if [[ $count -gt 0 ]] ;then
                 break
@@ -232,6 +241,7 @@ actionUniversitiesAnalysis() {
     writeLn ''
     writeLn "Found $count results:"
 
+    # Get results with case insensitiv and sort it
     rows=$(grep -i $answer $CSVFILE | sort)
     splitInRowArray "$rows"
     writeTable "$rows"
@@ -239,32 +249,25 @@ actionUniversitiesAnalysis() {
     writeAnyKeyForBackQuestion
 }
 
+# Task 6.3
 actionPercentOfColleges() {
     writeLn 'actionPercentOfColleges' 3
     writeLn ''
     writeLn '### For calculating percentage of all colleges compared to all universities ###'
     writeLn ''
 
-    while [ true ]
-        do
-            count=$(grep -c -i College $CSVFILE)
-            if [[ $count -gt 0 ]] ;then
-                break
-            fi
-
-            writeLn 'Sorry, no Colleges found in Data File.'
-
-        done
-
-    writeLn ''
+    # Get count of colleges
+    count=$(grep -c -i College $CSVFILE)
     writeLn "Count of colleges: $count"
+
+    # Get total count of universities
     total=$(cat $CSVFILE  | wc -l)
     
     # remove first row (header)
     total=$(($total-1))
     writeLn "Total count of Universities: $total"
 
-    #percent=$(awk "BEGIN { pc=100*${count}/${total}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
+    # Get percent out of count and total
     percent=$(awk "BEGIN { pc=100*${count}/${total}; print pc }")
 
     writeLn ''
@@ -273,6 +276,7 @@ actionPercentOfColleges() {
     writeAnyKeyForBackQuestion
 }
 
+# Task 6.4
 actionUniversitiesOfAState() {
     writeLn 'actionUniversitiesOfAState' 3
     writeLn ''
@@ -281,10 +285,12 @@ actionUniversitiesOfAState() {
 
     while [ true ]
         do
+            # Ask user to enter state
             read -p 'Please input the shortcut of a State: ' answer
-            #answer="$(echo "$answer" | tr '[:lower:]' '[:upper:]')"
-
-            count=$(grep -c -i $answer $CSVFILE)
+            # Transform to uppercase
+            answer="$(echo "$answer" | tr '[:lower:]' '[:upper:]')"
+            # Count results
+            count=$(grep -c $answer $CSVFILE)
             if [[ $count -gt 0 ]] ;then
                 break
             fi
@@ -296,6 +302,7 @@ actionUniversitiesOfAState() {
     writeLn ''
     writeLn "Found $count results:"
 
+    # Get actual resorts and sort it
     rows=$(grep $answer $CSVFILE | sort)
     splitInRowArray "$rows"
     writeTable "$rows"
@@ -303,71 +310,30 @@ actionUniversitiesOfAState() {
     writeAnyKeyForBackQuestion
 }
 
+# Task 6.5
 actionStateUniversitiesCount() {
     writeLn 'actionStateUniversitiesCount' 3
     writeLn ''
     writeLn '### Universities count of each State in USA ###'
     writeLn ''
 
-    stateIndex=0
-    states=()
-    countPerState=()
+    # Get all unique States without first line ("State")
+    states=($(cut -f3 -d"," universities.csv | awk '{if(NR>1)print}' | sort -u))
 
-    #Load Line by Line
+    writeLn '+-------+-------+'
+    printf "| %5s | %5s |\n" "Count" "State"
+    writeLn '+-------+-------+'
 
-    while IFS='' read -r row || [[ -n "$row" ]]; do
-
-        IFS=',' read -ra row <<< "$row"
-
-        state=$(trim "${row[2]}")
-
-        if [ "$state" == "State" ]; then
-          continue;
-        fi
-
-        if [ $(contains "${states[@]}" "$state") == "y" ]; then
-            index=$(findIndexByValue states[@] "$state")
-            ((countPerState[$index]++))
-        else
-            # echo "index $stateIndex"
-            # echo "$state contains not"
-            states[$stateIndex]="$state"
-            countPerState[$stateIndex]=1
-            ((stateIndex++))
-        fi
-    done < "$CSVFILE"
-
-    # Sort in Bash only possible with sort from file data.
-    # Create Cache File.
-    cacheFileName="actionStateUniversitiesCountCache.txt"
-
-    if [ -f $cacheFileName ]; then
-       rm "$cacheFileName"
-    fi
-
-    for (( i=1; i<${#states[@]}; i++ ));
+    for state in "${states[@]}" 
     do
-        echo "${states[$i]}, ${countPerState[$i]}" >> "$cacheFileName"
+        # Count for each State
+        count=$(grep -c $state $CSVFILE)
+        printf "| %5s | %5s |\n" "$count" "$state"
     done
 
-    sort --key 2 --numeric-sort $cacheFileName >> "$cacheFileName"
-
-    writeLn '+-------+-------+'
-    printf "| %5s | %5s |\n" "State" "Count"
     writeLn '+-------+-------+'
 
-    while IFS='' read -r row || [[ -n "$row" ]]; do
-
-        IFS=',' read -ra row <<< "$row"
-
-        state=$(trim "${row[0]}")
-        count=$(trim "${row[1]}")
-
-        printf "| %5s | %5s |\n" "$state" "$count"
-
-    done < "$cacheFileName"
-
-    writeLn '+-------+-------+'
+    writeAnyKeyForBackQuestion
 }
 
 # DEBUG ZONE
@@ -469,29 +435,3 @@ case ${ACTION} in
 esac
 
 writeLn 'finish!!!' 3
-
-takes_ary_as_arg()
-{
-    declare -a argAry1=("${!1}")
-    echo "${argAry1[@]}"
-
-    declare -a argAry2=("${!2}")
-    echo "${argAry2[@]}"
-}
-try_with_local_arys()
-{
-    # array variables could have local scope
-    local descTable=(
-        "sli4-iread"
-        "sli4-iwrite"
-        "sli3-iread"
-        "sli3-iwrite"
-    )
-    local optsTable=(
-        "--msix  --iread"
-        "--msix  --iwrite"
-        "--msi   --iread"
-        "--msi   --iwrite"
-    )
-    takes_ary_as_arg descTable[@] optsTable[@]
-}
