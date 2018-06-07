@@ -4,13 +4,14 @@
 # Data      : universities.csv
 # Author    : Andreas Frick, Jonathan Werren
 # Purpose   : Evaluation of Universities
-# Version   : 1.3
+# Version   : 1.4
 # Created   : 02.06.2018
 #
 # Changes:
 # v1.1 => Tasks 6.1, 6.4, 6.5 completed
 # v1.2 => Tasks 6.2, 6.3 completed
 # v1.3 => Added several sorts for sorted list printout
+# v1.4 => Added exit
  
 # GLOBAL VARIABLES
 # ================
@@ -153,13 +154,14 @@ actionMainMenu() {
     writeLn '3. Proportion of colleges'
     writeLn '4. Show state universities.'
     writeLn '5. Number of universities per state'
+    writeLn '6. Exit Evaluator'
     writeLn ''
 
     while [ true ]
         do
             read -p 'Input the Number of your option: ' answer
 
-            if [[ $answer -gt 0 && $answer -lt 6 ]] ;then
+            if [[ $answer -gt 0 && $answer -lt 7 ]] ;then
                 writeLn 'Answer is' + answer
 
                 case ${answer} in
@@ -182,6 +184,10 @@ actionMainMenu() {
 
                     "5")
                         goto "stateuniversitiescount"
+                    ;;
+
+                    "6")
+                        exit 0
                     ;;
 
                 esac
@@ -225,9 +231,42 @@ actionUniversitiesAnalysis() {
     writeLn ''
     writeLn "found $count results:"
 
-    rows=$(grep "$answer" $CSVFILE | sort)
+    rows=$(grep -i $answer $CSVFILE | sort)
     splitInRowArray "$rows"
     writeTable "$rows"
+
+    writeAnyKeyForBackQuestion
+}
+
+actionPercentOfColleges() {
+    writeLn 'actionPercentOfColleges' 3
+    writeLn ''
+    writeLn '### For calculating percentage of all colleges compared to all universities ###'
+
+    while [ true ]
+        do
+            count=$(grep -c -i College $CSVFILE)
+            if [[ $count -gt 0 ]] ;then
+                break
+            fi
+
+            writeLn 'Sorry, no Colleges found in Data File.'
+
+        done
+
+    writeLn ''
+    writeLn "Count of colleges: $count"
+    total=$(cat $CSVFILE  | wc -l)
+    
+    # remove first row (header)
+    total=$(($total-1))
+    writeLn "Total count of Universities: $total"
+
+    #percent=$(awk "BEGIN { pc=100*${count}/${total}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
+    percent=$(awk "BEGIN { pc=100*${count}/${total}; print pc }")
+
+    writeLn ''
+    writeLn "=> Percent of Colleges: $percent%"
 
     writeAnyKeyForBackQuestion
 }
@@ -239,10 +278,10 @@ actionUniversitiesOfAState() {
 
     while [ true ]
         do
-            read -p 'Please input the shortcut of a State' answer
-            answer="$(echo "$answer" | tr '[:lower:]' '[:upper:]')"
+            read -p 'Please input the shortcut of a State: ' answer
+            #answer="$(echo "$answer" | tr '[:lower:]' '[:upper:]')"
 
-            count=$(grep -c "$answer" $CSVFILE)
+            count=$(grep -c -i $answer $CSVFILE)
             if [[ $count -gt 0 ]] ;then
                 break
             fi
@@ -254,7 +293,7 @@ actionUniversitiesOfAState() {
     writeLn ''
     writeLn "found $count results:"
 
-    rows=$(grep "$answer" $ | sort)
+    rows=$(grep $answer $CSVFILE | sort)
     splitInRowArray "$rows"
     writeTable "$rows"
 
@@ -398,6 +437,10 @@ case ${ACTION} in
 
     analysis)
         actionUniversitiesAnalysis
+    ;;
+
+    proportion)
+        actionPercentOfColleges
     ;;
 
     stateuniversities)
